@@ -1,18 +1,24 @@
-import pygame
+from pygame import *
 import random
 
 # Ініціалізація Pygame
-pygame.init()
+init()
 
-bgMusic = "bgg.mp3"
-bonusMusic = "boon.mp3"
+bgmusic = "bgg.ogg"
+bonusmusic = "win.ogg"
+ffalse = "boon.ogg"
 
+#Ініціалізація
+mixer.init()
+
+mixer.music.load(bgmusic)
+mixer.music.play(-1)
 
 
 # Параметри вікна
 WIDTH, HEIGHT = 500, 500
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Доджер")
+screen = display.set_mode((WIDTH, HEIGHT))
+display.set_caption("Доджер")
 
 # Колір
 WHITE = (255, 255, 255)
@@ -22,7 +28,13 @@ GREEN = (0, 255, 0)
 BLACK = (0, 0, 0)
 
 # Шрифт
-font = pygame.font.Font(None, 36)
+font = font.Font(None, 36)
+font1 = pygame.font.Font(None, 80)
+
+#Тексти
+win = font1.render('You Win!', True, (255, 255, 255))
+lose = font1.render('You Lose!', True, (180, 0, 0))
+
 
 # Гравець
 player_size = 35
@@ -55,14 +67,14 @@ running = True
 while running:
     screen.fill(WHITE)
     
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
+    for e in event.get():
+        if e.type == QUIT:
             running = False
     
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_LEFT] and player_x > 0:
+    keys = key.get_pressed()
+    if keys[K_LEFT] and player_x > 0:
         player_x -= player_speed
-    if keys[pygame.K_RIGHT] and player_x < WIDTH - player_size:
+    if keys[K_RIGHT] and player_x < WIDTH - player_size:
         player_x += player_speed
     
     # Створення перешкод
@@ -90,30 +102,35 @@ while running:
     # Перевірка на зіткнення з перешкодами
     for obstacle in obstacles:
         if (player_x < obstacle[0] < player_x + player_size or player_x < obstacle[0] + obstacle_size < player_x + player_size) and player_y < obstacle[1] + obstacle_size < player_y + player_size:
+            mixer.Sound(ffalse).play()
             running = False
+            
     
     # Перевірка на підбір бонусів
     for bonus in bonuses[:]:
         if (player_x < bonus[0] < player_x + player_size or player_x < bonus[0] + bonus_size < player_x + player_size) and player_y < bonus[1] + bonus_size < player_y + player_size:
             bonuses.remove(bonus)
             score += 1
+            mixer.Sound(bonusmusic).play()
+            
     
     # Перевірка на перемогу
     if score >= bonus_goal:
         print("Ви виграли!")
+        screen.blit(win, (100,100))
         running = False
     
     # Малювання
-    pygame.draw.rect(screen, RED, (player_x, player_y, player_size, player_size))
+    draw.rect(screen, RED, (player_x, player_y, player_size, player_size))
     for obstacle in obstacles:
-        pygame.draw.rect(screen, BLUE, (obstacle[0], obstacle[1], obstacle_size, obstacle_size))
+        draw.rect(screen, BLUE, (obstacle[0], obstacle[1], obstacle_size, obstacle_size))
     for bonus in bonuses:
-        pygame.draw.rect(screen, GREEN, (bonus[0], bonus[1], bonus_size, bonus_size))
+        draw.rect(screen, GREEN, (bonus[0], bonus[1], bonus_size, bonus_size))
     
     # Відображення рахунку бонусів
     score_text = font.render(f"Бонуси: {score}/{bonus_goal}", True, BLACK)
     screen.blit(score_text, (10, 10))
     
-    pygame.display.update()
+    display.update()
     
-pygame.quit()
+quit()
